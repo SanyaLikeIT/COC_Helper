@@ -236,10 +236,10 @@ async def list_accounts(message: Message):
                     process_id, _, start_time, duration, description = process
                     time_left = max(0, start_time + duration - time.time())
                     formatted_time = format_time_left(time_left)
-                    account_info += f"\nProcess ID: {process_id}, Remaining time: {formatted_time}, Description: {description}\n"
+                    account_info += f"\nProcess ID: {process_id}, Remaining time: {formatted_time}, Description: {description}"
             else:
                 account_info += "\nNo active processes"
-
+            account_info += "\n"
             response.append(account_info)
 
         await message.answer("\n\n".join(response))
