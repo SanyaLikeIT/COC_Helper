@@ -8,7 +8,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Message
 from aiogram.filters import Command
 
-API_TOKEN = "7487002479:AAFc42M9QOp8cavt9yBe_eTu3dOE-GB1rTI"
+API_TOKEN = "7864302137:AAEuxMOLv1wb8GtJKHuNWJyJj_JDZA4s1qk"
 
 bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
