@@ -21,7 +21,7 @@ cursor = conn.cursor()
 # Создание таблиц в базе данных
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS accounts (
-    id INTEGER PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     name TEXT
 )
 """)
@@ -110,16 +110,13 @@ async def decision(message: Message, state: FSMContext):
         await message.answer("Invalid input. Please enter 0 or 1.")
 
 
+# Обработчики
 @dp.message(AccountStates.waiting_for_id)
 async def get_account_id(message: Message, state: FSMContext):
-    try:
-        account_id = int(message.text)
-        await state.update_data(account_id=account_id)
-        await message.answer("Please enter the account name:")
-        await state.set_state(AccountStates.waiting_for_name)
-    except ValueError:
-        await message.answer("Invalid input. Please enter a valid numeric ID.")
-
+    account_id = message.text  # Теперь не нужно преобразование в число
+    await state.update_data(account_id=account_id)
+    await message.answer("Please enter the account name:")
+    await state.set_state(AccountStates.waiting_for_name)
 
 @dp.message(AccountStates.waiting_for_name)
 async def get_account_name(message: Message, state: FSMContext):
@@ -161,18 +158,15 @@ async def process_choice(message: Message, state: FSMContext):
 
 @dp.message(ProcessStates.waiting_for_account_id)
 async def add_process_account_id(message: Message, state: FSMContext):
-    try:
-        account_id = int(message.text)
-        cursor.execute("SELECT id FROM accounts WHERE id = ?", (account_id,))
-        if cursor.fetchone() is None:
-            await message.answer("Account with this ID does not exist.")
-            await state.clear()
-        else:
-            await state.update_data(account_id=account_id)
-            await message.answer("Enter the process description:")
-            await state.set_state(ProcessStates.waiting_for_description)
-    except ValueError:
-        await message.answer("Invalid input. Please enter a valid numeric ID.")
+    account_id = message.text  # Оставляем как текст
+    cursor.execute("SELECT id FROM accounts WHERE id = ?", (account_id,))
+    if cursor.fetchone() is None:
+        await message.answer("Account with this ID does not exist.")
+        await state.clear()
+    else:
+        await state.update_data(account_id=account_id)
+        await message.answer("Enter the process description:")
+        await state.set_state(ProcessStates.waiting_for_description)
 
 
 @dp.message(ProcessStates.waiting_for_description)
