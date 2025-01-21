@@ -277,7 +277,40 @@ async def list_ids(message: Message):
     else:
         await message.answer("No accounts found.")
 
+async def check_completed_processes():
+    while True:
+        # Текущее время
+        current_time = time.time()
+
+        # Выбираем завершённые процессы
+        cursor.execute("""
+            SELECT process_id, account_id, description 
+            FROM processes 
+            WHERE start_time + duration <= ?
+        """, (current_time,))
+        completed_processes = cursor.fetchall()
+
+        if completed_processes:
+            for process_id, account_id, description in completed_processes:
+                # Уведомляем пользователя о завершении процесса
+                await bot.send_message(
+                    chat_id=1196215949,
+                    text=f"Process completed:\n"
+                         f"Process ID: {process_id}\n"
+                         f"Account ID: {account_id}\n"
+                         f"Description: {description}"
+                )
+                # Удаляем завершённый процесс из базы данных
+                cursor.execute("DELETE FROM processes WHERE process_id = ?", (process_id,))
+                conn.commit()
+
+        # Задержка перед следующей проверкой (например, 10 секунд)
+        await asyncio.sleep(10)
+
+# Добавляем запуск задачи в основной цикл
 async def main():
+    asyncio.create_task(check_completed_processes())  # Запускаем задачу проверки
     await dp.start_polling(bot)
+
 if __name__ == "__main__":
     asyncio.run(main())
