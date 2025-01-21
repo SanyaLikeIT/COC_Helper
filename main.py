@@ -7,8 +7,9 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Message
 from aiogram.filters import Command
-
-API_TOKEN = "7864302137:AAEuxMOLv1wb8GtJKHuNWJyJj_JDZA4s1qk"
+# Открываем файл api.txt и считываем содержимое
+with open("./api.txt", "r") as file:
+    API_TOKEN = file.read().strip() 
 
 bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
