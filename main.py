@@ -43,6 +43,7 @@ class AccountStates(StatesGroup):
     waiting_for_decision = State()
     waiting_for_id = State()
     waiting_for_name = State()
+    waiting_for_remove = State()
 
 
 class ProcessStates(StatesGroup):
@@ -105,12 +106,33 @@ async def decision(message: Message, state: FSMContext):
         await state.set_state(AccountStates.waiting_for_id)
     elif message.text == "1":
         await message.answer("Please enter the account ID to remove:")
-        await state.set_state(AccountStates.waiting_for_name)
+        await state.set_state(AccountStates.waiting_for_remove)
     else:
         await message.answer("Invalid input. Please enter 0 or 1.")
 
 
 # Обработчики
+@dp.message(AccountStates.waiting_for_remove)
+async def remove_account(message: Message, state: FSMContext):
+    account_id = message.text  # ID аккаунта для удаления
+    
+    # Проверяем, существует ли аккаунт
+    cursor.execute("SELECT id FROM accounts WHERE id = ?", (account_id,))
+    account = cursor.fetchone()
+
+    if account is None:
+        await message.answer("Account with this ID does not exist. Operation canceled.")
+    else:
+        # Удаляем связанные процессы
+        cursor.execute("DELETE FROM processes WHERE account_id = ?", (account_id,))
+        # Удаляем сам аккаунт
+        cursor.execute("DELETE FROM accounts WHERE id = ?", (account_id,))
+        conn.commit()
+
+        await message.answer(f"Account with ID {account_id} and all its processes have been removed successfully.")
+    
+    await state.clear()
+
 @dp.message(AccountStates.waiting_for_id)
 async def get_account_id(message: Message, state: FSMContext):
     account_id = message.text  # Теперь не нужно преобразование в число
